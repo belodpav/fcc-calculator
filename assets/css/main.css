@@ -1,0 +1,30 @@
+.wrapper {
+    width: 280px;
+    margin: 0 auto;
+}
+.calc-name {
+    text-align: center;
+}
+.calc-display {
+    background-color: #f2f2f2;
+    height: 100px;
+    margin-bottom: 20px;
+}
+.btn {
+    margin: 5px;
+    float: left;
+}
+.btn-small {
+    width: 60px;
+    height: 60px;
+    
+}
+.btn-big-v {
+    width: 60px;
+    height: 130px;
+    float: right;
+}
+.btn-big-h {
+    width: 130px;
+    height: 60px;
+}
