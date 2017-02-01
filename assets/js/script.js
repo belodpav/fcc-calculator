@@ -3,11 +3,10 @@ var buttons = document.getElementsByTagName("button"),
     fDisplay = document.getElementsByClassName("calc-display-first")[0],
     sDisplay = document.getElementsByClassName("calc-display-second")[0],
     marker = 0,
-    markerPointF = 0,
-    markerPointS = 0,
     markerPoint = 0,
     markerFirstItem = 0,
     markerDigits = 0,
+    markerEqual = 0,
     lastOperation = "",
     valueF = 0,
     valueS = 0;
@@ -16,11 +15,10 @@ var buttons = document.getElementsByTagName("button"),
 // Add symbols to displays
 
 function addToFirstDisplay(str) {
-    if (fDisplay.textContent.length + str.length >= 20 ) {
-        
-        return;
-    }
     fDisplay.textContent += str;
+    if (fDisplay.textContent.length >= 20) {
+        fDisplay.textContent = '>>' + fDisplay.textContent.slice(fDisplay.textContent.length - 18,fDisplay.textContent.length);
+    }  
 }
 function addToSecondDisplay(str) {
     if (sDisplay.textContent.length + 1 >= 16) {
@@ -28,46 +26,57 @@ function addToSecondDisplay(str) {
     }
     sDisplay.textContent += str;
 }
+
 // Clear both displays (AC) 
 function firstDisplayClear() {
     fDisplay.textContent = '';
-    
 }
 function secondDisplayClear() {
     sDisplay.textContent = '';
 }
-
+// Adding an operation to expressiton
 function addOperation(operator) {
     valueS = parseFloat(sDisplay.textContent);
     if (markerFirstItem === 0) {
         valueF = valueS;
         markerFirstItem = 1;
-        console.log(valueF,"  ",valueS);
         return;
     }
+    var numStr = "";
     switch (operator) {
             case "+":
                 valueF +=valueS;
-                secondDisplayClear();  
-                sDisplay.textContent = valueF.toString();      
+                secondDisplayClear(); 
+                numStr = valueF.toString();
+                if (numStr.length > 16) {
+                    sDisplay.textContent = valueF.toExponential(4);
+                } else {
+                  sDisplay.textContent = parseFloat(valueF.toFixed(4)) + 0;      
+                }  
                 markerFirstItem = 1;
-                console.log(valueF,"  ",valueS);
                 break;
             case "-":
                 valueF -=valueS;
                 secondDisplayClear();  
-                sDisplay.textContent = valueF.toString();
+                numStr = valueF.toString();
+                if (numStr.length > 16) {
+                    sDisplay.textContent = valueF.toExponential(4);
+                } else {
+                  sDisplay.textContent = parseFloat(valueF.toFixed(4)) + 0;      
+                }
                 markerFirstItem = 1;
-                
-                console.log(valueF,"  ",valueS);
                 break;
             case "*":
                 valueF *=valueS;
                 secondDisplayClear();  
-                sDisplay.textContent = valueF.toString();
+                numStr = valueF.toString();
+                if (numStr.length > 16) {
+                    sDisplay.textContent = valueF.toExponential(4);
+                } else {
+                  sDisplay.textContent = parseFloat(valueF.toFixed(4)) + 0;       
+                }
+                   
                 markerFirstItem = 1;
-                
-                console.log(valueF,"  ",valueS);
                 break;
             case "/":
                 if (valueS === "0") {
@@ -77,10 +86,14 @@ function addOperation(operator) {
                 }
                 valueF /=valueS;
                 secondDisplayClear();  
-                sDisplay.textContent = valueF.toString();
+                numStr = valueF.toString();
+                if (numStr.indexOf("e")>=0 || parseInt(valueF).toString().length > 10) {
+                    sDisplay.textContent = valueF.toExponential(4);
+                } else {
+                  sDisplay.textContent = parseFloat(valueF.toFixed(4)) + 0;     
+                }
+
                 markerFirstItem = 1;
-                
-                console.log(valueF,"  ",valueS);
                 break;
     }
     
@@ -89,8 +102,7 @@ function addOperation(operator) {
 function ceLastDelite(marker) {
     sDisplay.textContent = "";   
 }
-
-
+// buttons events 
 document.onclick = function(element) {
     var target = element.target;
     var btn = target,
@@ -99,7 +111,6 @@ document.onclick = function(element) {
     if(btn.tagName !== "BUTTON") {
         return;
     }
-    console.log(sDisplay.textContent);
     if (value === "ac" || sDisplay.textContent === "Infinity") {
         firstDisplayClear();
         secondDisplayClear();
@@ -108,6 +119,7 @@ document.onclick = function(element) {
         markerFirstItem = 0;
         markerDigits = 0;
         markerPoint = 0;
+        markerEqual = 0;
         if (value === "ac") {
             return;
         }
@@ -119,24 +131,27 @@ document.onclick = function(element) {
             if (lastOperation === "") {
                 firstDisplayClear();
                 secondDisplayClear();
+                markerEqual = 0;
             }
             break;
         case "+": 
             if (markerDigits === 1) {
-                addToFirstDisplay(sDisplay.textContent+"+");
+                addToFirstDisplay(sDisplay.textContent+" + ");
                 addOperation(lastOperation);
                 lastOperation = "+"
                 markerDigits = 0;
                 markerPoint = 0;
+                markerEqual = 0;
             }
             break;
         case "-": 
             if (markerDigits === 1) {
-                addToFirstDisplay(sDisplay.textContent+"-");
+                addToFirstDisplay(sDisplay.textContent+" - ");
                 addOperation(lastOperation);
                 lastOperation = "-"
                 markerDigits = 0;
                 markerPoint = 0;
+                markerEqual = 0;
             } else if (lastOperation === "") {
                 addToSecondDisplay(value);
                 markerDigits = 1;
@@ -144,28 +159,31 @@ document.onclick = function(element) {
             break;
         case "*": 
             if (markerDigits === 1) {
-                addToFirstDisplay(sDisplay.textContent+"*");
+                addToFirstDisplay(sDisplay.textContent+" * ");
                 addOperation(lastOperation);
                 lastOperation = "*"
                 markerDigits = 0;
                 markerPoint = 0;
+                markerEqual = 0;
             }
             break;
         case "/": 
             if (markerDigits === 1) {
-                addToFirstDisplay(sDisplay.textContent+"/");
+                addToFirstDisplay(sDisplay.textContent+" / ");
                 addOperation(lastOperation);
                 lastOperation = "/"
                 markerDigits = 0;
                 markerPoint = 0;
+                markerEqual = 0;
             }
             break;
         case "=":
             if (markerDigits === 1 && lastOperation !== "") {
-                addToFirstDisplay(sDisplay.textContent+"=");
                 addOperation(lastOperation);
+                firstDisplayClear();
                 lastOperation = ""
-                markerDigits = 1;
+                markerEqual = 1;
+                markerDigits = 1; 
                 markerPoint = 0;
             }
             break;
@@ -177,9 +195,13 @@ document.onclick = function(element) {
             break;
         default :
             if (markerDigits === 0) {
-                secondDisplayClear();
+                secondDisplayClear();    
             }
-            //addToFirstDisplay(sDisplay.innerHTML);
+            if (markerEqual === 1) {
+                secondDisplayClear();
+                markerEqual = 0;
+                markerFirstItem = 0;
+            }
             addToSecondDisplay(value);
             markerDigits = 1;
             break;
